@@ -1,0 +1,296 @@
+# =========================================================
+# GalChurras - React + Spring Boot
+# .gitignore geral do projeto
+# =========================================================
+
+
+# =========================================================
+# SISTEMA OPERACIONAL
+# =========================================================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+
+# =========================================================
+# EDITORES / IDEs
+# =========================================================
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.example.json
+
+# Eclipse / Spring Tool Suite
+.project
+.classpath
+.settings/
+.springBeans
+.sts4-cache/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+
+# =========================================================
+# FRONTEND - REACT / VITE / NODE
+# =========================================================
+
+# Dependências
+node_modules/
+
+# Build
+dist/
+build/
+
+# Cache
+.cache/
+.parcel-cache/
+.vite/
+vite.config.ts.timestamp-*
+vite.config.js.timestamp-*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Arquivos de lock duplicados
+# Mantenha apenas o lock do gerenciador que você usar.
+# Se usar npm, mantenha package-lock.json.
+# Se usar yarn, mantenha yarn.lock.
+# Se usar pnpm, mantenha pnpm-lock.yaml.
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Testes / coverage frontend
+coverage/
+.nyc_output/
+
+# Storybook
+storybook-static/
+
+# Arquivos gerados por ferramentas frontend
+eslintcache
+.stylelintcache
+
+
+# =========================================================
+# BACKEND - JAVA / SPRING BOOT / MAVEN
+# =========================================================
+
+# Build Maven
+target/
+
+# Arquivos compilados
+*.class
+
+# Pacotes Java
+*.jar
+*.war
+*.ear
+
+# Maven Wrapper jar normalmente pode ser versionado.
+# Não ignore .mvn/wrapper/maven-wrapper.jar se for usar Maven Wrapper.
+# .mvn/wrapper/maven-wrapper.jar
+
+# Logs Spring Boot
+*.log
+logs/
+log/
+
+# Arquivos temporários Java
+hs_err_pid*
+replay_pid*
+
+
+# =========================================================
+# BACKEND - GRADLE, CASO USE NO FUTURO
+# =========================================================
+
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+
+# =========================================================
+# BANCO DE DADOS / ARQUIVOS LOCAIS
+# =========================================================
+
+# H2 Database local
+*.db
+*.mv.db
+*.trace.db
+
+# SQLite, caso use para teste
+*.sqlite
+*.sqlite3
+
+# Dumps de banco
+*.sql
+*.dump
+*.bak
+
+# Arquivos de volume local
+data/
+postgres-data/
+mysql-data/
+
+
+# =========================================================
+# DOCKER
+# =========================================================
+
+# Arquivos locais do Docker
+.docker/
+
+# Não ignore Dockerfile nem docker-compose.yml,
+# pois geralmente eles devem ir para o Git.
+# Dockerfile
+# docker-compose.yml
+
+# Arquivos de ambiente usados pelo Docker
+docker-compose.override.yml
+
+
+# =========================================================
+# VARIÁVEIS DE AMBIENTE / SEGREDOS
+# =========================================================
+
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Spring local config com senhas
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+
+# Chaves e certificados
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+
+# JWT / Secrets / Tokens
+secrets/
+private/
+credentials/
+
+
+# =========================================================
+# UPLOADS / ARQUIVOS GERADOS PELO SISTEMA
+# =========================================================
+
+uploads/
+files/
+storage/
+tmp/
+temp/
+
+# Imagens enviadas por usuários
+user-uploads/
+
+# Relatórios/exportações
+exports/
+reports/
+
+
+# =========================================================
+# TESTES
+# =========================================================
+
+# Java test reports
+surefire-reports/
+failsafe-reports/
+
+# Testcontainers
+.testcontainers.properties
+
+# Cypress / Playwright, caso use futuramente
+cypress/videos/
+cypress/screenshots/
+playwright-report/
+test-results/
+
+
+# =========================================================
+# CACHE / FERRAMENTAS
+# =========================================================
+
+.cache/
+tmp/
+temp/
+
+# SonarQube
+.scannerwork/
+
+# JRebel
+rebel.xml
+
+# Lombok config normalmente pode ser versionado.
+# lombok.config
+
+
+# =========================================================
+# ARQUIVOS COMPACTADOS / BACKUPS
+# =========================================================
+
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Backups manuais
+*.backup
+*.bkp
+*.old
+*.orig
+
+
+# =========================================================
+# MONOREPO - PASTAS COMUNS
+# =========================================================
+
+# Caso o projeto fique assim:
+# galchurras/
+#   frontend/
+#   backend/
+
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/coverage/
+
+backend/target/
+backend/logs/
+backend/*.log
