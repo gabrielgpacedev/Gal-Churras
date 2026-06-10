@@ -1,12 +1,19 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { kits, kitShopOffers, butcherShops } from '../data/mockData';
+import { kits, kitShopOffers, butcherShops, shopKits } from '../data/mockData';
+import { useCart } from '../context/CartContext';
 
 export default function KitDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addKit } = useCart();
   const kit = kits.find((k) => k.id === Number(id));
   const offers = kitShopOffers[Number(id)] || [];
+
+  const orderFrom = (shopId) => {
+    const shopKit = (shopKits[shopId] || []).find((sk) => sk.kitId === Number(id));
+    if (shopKit && addKit(shopKit)) navigate('/checkout');
+  };
 
   if (!kit) return <div className="screen"><p style={{ color: '#f5e6c8', padding: '2rem' }}>Kit não encontrado.</p></div>;
 
@@ -18,7 +25,7 @@ export default function KitDetailPage() {
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
         </button>
-        <div className="detail-hero-image" />
+        <div className="detail-hero-image" style={kit.image ? { backgroundImage: `url(${kit.image})` } : undefined} />
         <div className="detail-hero-overlay">
           <span className="detail-hero-tag">{kit.badge}</span>
           <h1 className="detail-hero-title">{kit.name}</h1>
@@ -50,7 +57,7 @@ export default function KitDetailPage() {
               <div
                 key={offer.shopId}
                 className="offer-card"
-                onClick={() => navigate(`/checkout/${shop.id}/${kit.id}`)}
+                onClick={() => orderFrom(shop.id)}
               >
                 <div className="offer-card-header">
                   <div>

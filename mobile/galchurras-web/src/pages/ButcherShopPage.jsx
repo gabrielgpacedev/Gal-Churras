@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { butcherShops, shopKits } from '../data/mockData';
+import { butcherShops, shopKits, shopItems } from '../data/mockData';
+import { useCart } from '../context/CartContext';
 
 export default function ButcherShopPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('kits');
+  const { addKit, addItem, increment, decrement, qtyOf } = useCart();
   const shop = butcherShops.find((s) => s.id === Number(id));
   const kits = shopKits[Number(id)] || [];
+  const items = shopItems[Number(id)] || [];
 
   if (!shop) return <div className="screen"><p style={{ color: '#f5e6c8', padding: '2rem' }}>Açougue não encontrado.</p></div>;
 
@@ -21,7 +24,7 @@ export default function ButcherShopPage() {
           </svg>
         </button>
         <div className="shop-rating-badge">⭐ {shop.rating}</div>
-        <div className="shop-hero-image" />
+        <div className="shop-hero-image" style={shop.image ? { backgroundImage: `url(${shop.image})` } : undefined} />
       </div>
 
       <div className="shop-info">
@@ -70,7 +73,7 @@ export default function ButcherShopPage() {
             {kits.map((kit) => (
               <div key={kit.id} className="shop-kit-card">
                 <div className="shop-kit-header">
-                  <div className="shop-kit-thumb" />
+                  <div className="shop-kit-thumb" style={kit.image ? { backgroundImage: `url(${kit.image})` } : undefined} />
                   <div className="shop-kit-meta">
                     <span className="shop-kit-badge">{kit.badge}</span>
                     <div className="shop-kit-title-row">
@@ -96,20 +99,55 @@ export default function ButcherShopPage() {
                     </div>
                   ))}
                 </div>
-                <button
-                  className="btn-primary shop-kit-btn"
-                  onClick={() => navigate(`/checkout/${shop.id}/${kit.kitId}`)}
-                >
-                  Pedir kit
-                </button>
+                {qtyOf(`kit-${kit.id}`) > 0 ? (
+                  <div className="shop-kit-in-cart">
+                    <div className="stepper">
+                      <button className="stepper-btn" onClick={() => decrement(`kit-${kit.id}`)}>−</button>
+                      <span className="stepper-qty">{qtyOf(`kit-${kit.id}`)}</span>
+                      <button className="stepper-btn add" onClick={() => increment(`kit-${kit.id}`)}>+</button>
+                    </div>
+                    <span className="shop-kit-in-cart-label">no carrinho</span>
+                  </div>
+                ) : (
+                  <button
+                    className="btn-primary shop-kit-btn"
+                    onClick={() => addKit(kit)}
+                  >
+                    Adicionar ao carrinho
+                  </button>
+                )}
               </div>
             ))}
           </div>
         )}
 
         {activeTab === 'items' && (
-          <div className="shop-items-empty">
-            <p>Itens avulsos em breve</p>
+          <div className="avulsos-list">
+            {items.map((item) => {
+              const qty = qtyOf(`item-${item.id}`);
+              return (
+                <div key={item.id} className="avulso-row">
+                  <div className="avulso-info">
+                    <span className="avulso-name">{item.name}</span>
+                    <span className="avulso-unit">{item.unit}</span>
+                  </div>
+                  <span className="avulso-price">
+                    R$ {item.price.toFixed(2).replace('.', ',')}
+                  </span>
+                  {qty > 0 ? (
+                    <div className="stepper">
+                      <button className="stepper-btn" onClick={() => decrement(`item-${item.id}`)}>−</button>
+                      <span className="stepper-qty">{qty}</span>
+                      <button className="stepper-btn add" onClick={() => increment(`item-${item.id}`)}>+</button>
+                    </div>
+                  ) : (
+                    <button className="avulso-add-btn" onClick={() => addItem(shop.id, item)}>
+                      +
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

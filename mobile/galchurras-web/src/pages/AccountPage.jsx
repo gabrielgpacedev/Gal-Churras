@@ -19,7 +19,7 @@ const menuItems = [
     id: 'favorites',
     label: 'Favoritos',
     sub: 'Kits e açougues salvos',
-    path: null,
+    path: '/favorites',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
@@ -30,7 +30,7 @@ const menuItems = [
     id: 'addresses',
     label: 'Endereços',
     sub: 'Casa, trabalho...',
-    path: null,
+    path: '/addresses',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
@@ -72,7 +72,7 @@ export default function AccountPage() {
             <span className="account-user-name">{currentUser.name}</span>
             <span className="account-user-email">{currentUser.email}</span>
           </div>
-          <button className="account-edit-btn">Editar</button>
+          <button className="account-edit-btn" onClick={() => navigate('/account/edit')}>Editar</button>
         </div>
 
         <div className="account-menu">

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  butcherShops, shopKits, shopItems,
-  addresses, paymentMethods, DELIVERY_FEE,
+  butcherShops, shopItems,
+  addresses, paymentMethods, DELIVERY_FEE, WEEKLY_PROMO,
 } from '../data/mockData';
+import { useCart } from '../context/CartContext';
 
 /* ── Ícones de pagamento ─────────────────────── */
 function PixIcon() {
@@ -46,54 +47,36 @@ function Stepper({ qty, onAdd, onRemove }) {
 
 /* ── Página ──────────────────────────────────── */
 export default function CheckoutPage() {
-  const { shopId, kitId } = useParams();
   const navigate = useNavigate();
+  const { entries, cartShopId, addItem, increment, decrement, qtyOf, clear } = useCart();
 
-  const shop    = butcherShops.find((s) => s.id === Number(shopId));
-  const shopKit = (shopKits[Number(shopId)] || []).find((k) => k.kitId === Number(kitId));
-  const avulsos = shopItems[Number(shopId)] || [];
-
-  const [extraItems, setExtraItems]       = useState({});   // { itemId: qty }
   const [avulsosExpanded, setAvulsosExpanded] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(addresses[0].id);
   const [selectedPayment, setSelectedPayment] = useState('pix');
-  const [confirmed, setConfirmed]         = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
-  if (!shop || !shopKit) {
-    return (
-      <div className="screen" style={{ padding: '2rem', color: 'var(--text-primary)' }}>
-        <button style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '1rem' }} onClick={() => navigate(-1)}>
-          ← Voltar
-        </button>
-        <p>Pedido não encontrado.</p>
-      </div>
-    );
-  }
+  const shop = butcherShops.find((s) => s.id === cartShopId);
+  const avulsos = shopItems[cartShopId] || [];
+
+  const kitEntries = entries.filter((e) => e.type === 'kit');
+  const itemEntries = entries.filter((e) => e.type === 'item');
 
   /* totais */
-  const extrasTotal = Object.entries(extraItems).reduce((acc, [id, qty]) => {
-    const item = avulsos.find((i) => i.id === id);
-    return acc + (item ? item.price * qty : 0);
-  }, 0);
-  const subtotal = shopKit.price + extrasTotal;
-  const total    = subtotal + DELIVERY_FEE;
-
-  const addItem = (id) =>
-    setExtraItems((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-
-  const removeItem = (id) =>
-    setExtraItems((prev) => {
-      const next = { ...prev };
-      if ((next[id] || 0) <= 1) delete next[id];
-      else next[id] -= 1;
-      return next;
-    });
-
-  const addedEntries = Object.entries(extraItems).filter(([, qty]) => qty > 0);
+  const grossSubtotal = entries.reduce((acc, e) => acc + e.price * e.qty, 0);
+  const discountAmount = kitEntries.reduce(
+    (acc, e) => acc + (e.promo ? +(e.price * e.qty * WEEKLY_PROMO.discountPercent / 100).toFixed(2) : 0),
+    0
+  );
+  const hasPromo = discountAmount > 0;
+  const subtotal = grossSubtotal - discountAmount;
+  const total = subtotal + DELIVERY_FEE;
 
   const handleConfirm = () => {
     setConfirmed(true);
-    setTimeout(() => navigate('/orders'), 2200);
+    setTimeout(() => {
+      clear();
+      navigate('/orders');
+    }, 2200);
   };
 
   if (confirmed) {
@@ -102,8 +85,36 @@ export default function CheckoutPage() {
         <div className="checkout-success-inner">
           <div className="checkout-success-icon">🔥</div>
           <h2>Pedido confirmado!</h2>
-          <p>Seu kit está sendo preparado pelo <strong>{shop.name}</strong>.</p>
-          <p className="checkout-success-time">Previsão de entrega: {shop.deliveryTime}</p>
+          <p>Seu pedido está sendo preparado pelo <strong>{shop?.name}</strong>.</p>
+          <p className="checkout-success-time">Previsão de entrega: {shop?.deliveryTime}</p>
+        </div>
+      </div>
+    );
+  }
+
+  /* carrinho vazio */
+  if (entries.length === 0) {
+    return (
+      <div className="screen">
+        <div className="page-header">
+          <button className="back-btn" onClick={() => navigate(-1)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+          </button>
+          <h1 className="page-title">Carrinho</h1>
+        </div>
+        <div className="fav-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="9" cy="21" r="1.5" />
+            <circle cx="19" cy="21" r="1.5" />
+            <path d="M2 3h2.5l2.4 12.2a2 2 0 002 1.8h9.3a2 2 0 002-1.7L21.5 7H6" />
+          </svg>
+          <p>Seu carrinho está vazio</p>
+          <span>Adicione kits ou itens de um açougue para começar.</span>
+          <button className="btn-primary checkout-empty-cta" onClick={() => navigate('/shops')}>
+            Explorar açougues
+          </button>
         </div>
       </div>
     );
@@ -113,84 +124,107 @@ export default function CheckoutPage() {
     <div className="screen checkout-screen">
       {/* Header */}
       <div className="page-header">
-        <button className="back-btn" style={{ position: 'static' }} onClick={() => navigate(-1)}>
+        <button className="back-btn" onClick={() => navigate(-1)}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
         </button>
-        <h1 className="page-title">Confirmar pedido</h1>
+        <h1 className="page-title">Seu pedido</h1>
       </div>
 
       <div className="checkout-body">
 
-        {/* ── Seção 1: Seu pedido ─────────────── */}
-        <section className="checkout-section">
-          <h2 className="checkout-section-title">Seu pedido</h2>
+        {/* ── Banner de promoção ───────────────── */}
+        {hasPromo && (
+          <div className="checkout-promo-banner">
+            <span className="checkout-promo-fire">🔥</span>
+            <div className="checkout-promo-text">
+              <span className="checkout-promo-title">{WEEKLY_PROMO.description}</span>
+              <span className="checkout-promo-sub">{WEEKLY_PROMO.label} aplicado no kit</span>
+            </div>
+            <span className="checkout-promo-badge">{WEEKLY_PROMO.label}</span>
+          </div>
+        )}
 
-          {/* Kit base */}
-          <div className="checkout-kit-card">
-            <div className="checkout-kit-thumb" />
-            <div className="checkout-kit-info">
-              <span className="checkout-kit-badge">{shopKit.badge}</span>
-              <span className="checkout-kit-name">{shopKit.name}</span>
-              <div className="checkout-kit-shop">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                {shop.name}
+        {/* ── Seção 1: Carrinho ────────────────── */}
+        <section className="checkout-section">
+          <h2 className="checkout-section-title">Carrinho · {shop.name}</h2>
+
+          {/* Kits */}
+          {kitEntries.map((entry) => (
+            <div key={entry.key} className="checkout-kit-block">
+              <div className="checkout-kit-card">
+                <div className="checkout-kit-thumb" style={entry.image ? { backgroundImage: `url(${entry.image})` } : undefined} />
+                <div className="checkout-kit-info">
+                  <span className="checkout-kit-badge">{entry.badge}</span>
+                  <span className="checkout-kit-name">{entry.name}</span>
+                  <div className="checkout-kit-serves">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                    {entry.detail}
+                  </div>
+                </div>
+                <div className="checkout-kit-price-tag">
+                  {entry.promo && (
+                    <span className="checkout-kit-price-original">
+                      R$ {(entry.price * entry.qty).toFixed(2).replace('.', ',')}
+                    </span>
+                  )}
+                  <span>
+                    R$ {((entry.price * entry.qty) * (entry.promo ? 1 - WEEKLY_PROMO.discountPercent / 100 : 1)).toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
               </div>
-              <div className="checkout-kit-serves">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 010 7.75"/>
-                </svg>
-                {shopKit.serves}
+
+              {/* Itens incluídos no kit */}
+              {entry.items && (
+                <div className="checkout-items-list">
+                  <span className="checkout-items-label">INCLUÍDOS NO KIT</span>
+                  {entry.items.map((item) => (
+                    <div key={item.name} className="checkout-item-row">
+                      <span className="checkout-item-name">{item.name}</span>
+                      <span className="checkout-item-qty">{item.qty}</span>
+                      <span className="checkout-item-included">incluso</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="checkout-kit-stepper-row">
+                <span className="checkout-kit-stepper-label">Quantidade</span>
+                <Stepper
+                  qty={entry.qty}
+                  onAdd={() => increment(entry.key)}
+                  onRemove={() => decrement(entry.key)}
+                />
               </div>
             </div>
-            <span className="checkout-kit-price-tag">
-              R$ {shopKit.price.toFixed(2).replace('.', ',')}
-            </span>
-          </div>
+          ))}
 
-          {/* Itens incluídos no kit */}
-          <div className="checkout-items-list">
-            <span className="checkout-items-label">INCLUÍDOS NO KIT</span>
-            {shopKit.items.map((item) => (
-              <div key={item.name} className="checkout-item-row">
-                <span className="checkout-item-name">{item.name}</span>
-                <span className="checkout-item-qty">{item.qty}</span>
-                <span className="checkout-item-included">incluso</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Extras já adicionados */}
-          {addedEntries.length > 0 && (
+          {/* Itens avulsos no carrinho */}
+          {itemEntries.length > 0 && (
             <div className="checkout-extras-added">
-              <span className="checkout-items-label">ITENS EXTRAS</span>
-              {addedEntries.map(([id, qty]) => {
-                const item = avulsos.find((i) => i.id === id);
-                if (!item) return null;
-                return (
-                  <div key={id} className="checkout-extra-row">
-                    <div className="checkout-extra-info">
-                      <span className="checkout-extra-name">{item.name}</span>
-                      <span className="checkout-extra-unit">{item.unit}</span>
-                    </div>
-                    <Stepper
-                      qty={qty}
-                      onAdd={() => addItem(id)}
-                      onRemove={() => removeItem(id)}
-                    />
-                    <span className="checkout-extra-price">
-                      R$ {(item.price * qty).toFixed(2).replace('.', ',')}
-                    </span>
+              <span className="checkout-items-label">ITENS AVULSOS</span>
+              {itemEntries.map((entry) => (
+                <div key={entry.key} className="checkout-extra-row">
+                  <div className="checkout-extra-info">
+                    <span className="checkout-extra-name">{entry.name}</span>
+                    <span className="checkout-extra-unit">{entry.detail}</span>
                   </div>
-                );
-              })}
+                  <Stepper
+                    qty={entry.qty}
+                    onAdd={() => increment(entry.key)}
+                    onRemove={() => decrement(entry.key)}
+                  />
+                  <span className="checkout-extra-price">
+                    R$ {(entry.price * entry.qty).toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
         </section>
@@ -203,7 +237,7 @@ export default function CheckoutPage() {
 
           <div className="avulsos-list">
             {(avulsosExpanded ? avulsos : avulsos.slice(0, 2)).map((item) => {
-              const qty = extraItems[item.id] || 0;
+              const qty = qtyOf(`item-${item.id}`);
               return (
                 <div key={item.id} className="avulso-row">
                   <div className="avulso-info">
@@ -216,11 +250,11 @@ export default function CheckoutPage() {
                   {qty > 0 ? (
                     <Stepper
                       qty={qty}
-                      onAdd={() => addItem(item.id)}
-                      onRemove={() => removeItem(item.id)}
+                      onAdd={() => increment(`item-${item.id}`)}
+                      onRemove={() => decrement(`item-${item.id}`)}
                     />
                   ) : (
-                    <button className="avulso-add-btn" onClick={() => addItem(item.id)}>
+                    <button className="avulso-add-btn" onClick={() => addItem(shop.id, item)}>
                       +
                     </button>
                   )}
@@ -329,13 +363,13 @@ export default function CheckoutPage() {
       <div className="checkout-footer">
         <div className="checkout-totals">
           <div className="checkout-total-row">
-            <span>Kit</span>
-            <span>R$ {shopKit.price.toFixed(2).replace('.', ',')}</span>
+            <span>Subtotal</span>
+            <span>R$ {grossSubtotal.toFixed(2).replace('.', ',')}</span>
           </div>
-          {extrasTotal > 0 && (
-            <div className="checkout-total-row">
-              <span>Itens extras</span>
-              <span>R$ {extrasTotal.toFixed(2).replace('.', ',')}</span>
+          {hasPromo && (
+            <div className="checkout-total-row checkout-total-discount">
+              <span>Desconto ({WEEKLY_PROMO.label})</span>
+              <span>− R$ {discountAmount.toFixed(2).replace('.', ',')}</span>
             </div>
           )}
           <div className="checkout-total-row">

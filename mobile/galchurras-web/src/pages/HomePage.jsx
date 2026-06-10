@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { categories, kits, butcherShops, kitShopOffers } from '../data/mockData';
+import { categories, kits, butcherShops, kitShopOffers, shopKits, WEEKLY_PROMO } from '../data/mockData';
+import { useCart } from '../context/CartContext';
 
 const KIT_COLORS = ['#7c2020', '#6b1a1a', '#5c1515', '#4a1010'];
 
+const kitImageStyle = (image) =>
+  image ? { backgroundImage: `linear-gradient(180deg, rgba(26,5,5,0.1) 30%, rgba(26,5,5,0.9) 100%), url(${image})` } : undefined;
+
+const { shopId: PROMO_SHOP_ID, kitId: PROMO_KIT_ID } = WEEKLY_PROMO;
+const promoShop = butcherShops.find(s => s.id === PROMO_SHOP_ID);
+const promoShopKit = shopKits[PROMO_SHOP_ID]?.find(sk => sk.kitId === PROMO_KIT_ID);
+
 export default function HomePage() {
   const navigate = useNavigate();
+  const { addKit } = useCart();
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
 
@@ -38,13 +47,42 @@ export default function HomePage() {
         <div className="home-avatar">R</div>
       </div>
 
-      <div className="home-banner">
+      <div
+        className="home-banner"
+        style={WEEKLY_PROMO.image ? { backgroundImage: `linear-gradient(180deg, rgba(46,8,8,0.45) 0%, rgba(26,5,5,0.88) 100%), url(${WEEKLY_PROMO.image})` } : undefined}
+        onClick={() => { if (promoShopKit && addKit(promoShopKit, { promo: true })) navigate('/checkout'); }}
+      >
         <span className="banner-tag">✦ Promoção da semana</span>
-        <h2 className="banner-title">
-          Churrasco<br />
-          <em>na sua porta</em>
-        </h2>
-        <p className="banner-sub">Kits prontos dos melhores açougues, entregues em até 60 min.</p>
+
+
+
+        <h2 className="banner-title">{promoShopKit.name}</h2>
+        <p className="banner-kit-badge">{promoShopKit.badge}</p>
+
+        <div className="banner-shop-row">
+          <span className="banner-shop-name">{promoShop.name}</span>
+          <span className="banner-shop-rating">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--accent)" stroke="none">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            {promoShop.rating}
+          </span>
+        </div>
+
+
+
+        <div className="banner-footer">
+          <div className="banner-price-block">
+            <span className="banner-price-label">a partir de</span>
+            <span className="banner-price">R$ {promoShopKit.price.toFixed(2).replace('.', ',')}</span>
+          </div>
+          <span className="banner-cta">
+            Ver oferta
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </span>
+        </div>
       </div>
 
       <div className="home-content">
@@ -78,7 +116,7 @@ export default function HomePage() {
             <h3 className="section-title">Kits para churrasco</h3>
             <p className="section-sub">Selecionados pertinho de você</p>
           </div>
-          <button className="see-all">Ver tudo</button>
+          <button className="see-all" onClick={() => navigate('/kits')}>Ver tudo</button>
         </div>
 
         <div className="kits-list">
@@ -89,7 +127,7 @@ export default function HomePage() {
               style={{ background: KIT_COLORS[i % KIT_COLORS.length] }}
               onClick={() => navigate(`/kit/${kit.id}`)}
             >
-              <div className="kit-card-image-placeholder" />
+              <div className="kit-card-image-placeholder" style={kitImageStyle(kit.image)} />
               <div className="kit-card-badge-serves">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
@@ -117,7 +155,7 @@ export default function HomePage() {
             <h3 className="section-title">Açougues próximos</h3>
             <p className="section-sub">Avaliados pela comunidade</p>
           </div>
-          <button className="see-all">Ver tudo</button>
+          <button className="see-all" onClick={() => navigate('/shops')}>Ver tudo</button>
         </div>
 
         <div className="shops-list">
@@ -127,7 +165,7 @@ export default function HomePage() {
               className="shop-card-home"
               onClick={() => navigate(`/butcher/${shop.id}`)}
             >
-              <div className="shop-card-image" />
+              <div className="shop-card-image" style={shop.image ? { backgroundImage: `url(${shop.image})` } : undefined} />
               <div className="shop-card-info">
                 <div className="shop-card-top">
                   <span className="shop-card-name">{shop.name}</span>
@@ -143,7 +181,6 @@ export default function HomePage() {
           ))}
         </div>
       </div>
-
       <BottomNav />
     </div>
   );
