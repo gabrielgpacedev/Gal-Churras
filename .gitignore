@@ -157,7 +157,7 @@ build/
 *.bak
 
 # Arquivos de volume local
-data/
+# !data/
 postgres-data/
 mysql-data/
 

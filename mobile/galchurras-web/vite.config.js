@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   // GitHub Pages serve o app em https://<user>.github.io/Gal-Churras/
-  base: '/Gal-Churras/',
+  base: '/Gal-Churras/mobile/galchurras-web',
   server: {
     // expõe o dev server na rede local para testar no celular
     host: true,
