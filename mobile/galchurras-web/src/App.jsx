@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import CartBar from './components/CartBar';
 import LoginPage from './pages/LoginPage';
@@ -17,7 +17,7 @@ import './App.css';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <CartProvider>
         <div className="app-shell">
           <Routes>
@@ -38,6 +38,6 @@ export default function App() {
           <CartBar />
         </div>
       </CartProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
