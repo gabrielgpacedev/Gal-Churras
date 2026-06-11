@@ -31,8 +31,9 @@ export default defineConfig({
       },
     }),
   ],
-  // GitHub Pages serve o app em https://<user>.github.io/Gal-Churras/
-  base: '/Gal-Churras/mobile/galchurras-web',
+  // o workflow publica o conteúdo de dist/ na raiz do site do Pages,
+  // então o app fica em https://gabrielgpacedev.github.io/Gal-Churras/
+  base: '/Gal-Churras/',
   server: {
     // expõe o dev server na rede local para testar no celular
     host: true,
