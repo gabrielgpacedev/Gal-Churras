@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
+import { useAuth } from '../context/AuthContext';
 import { currentUser } from '../data/mockData';
 
 const menuItems = [
@@ -54,8 +55,10 @@ const menuItems = [
 
 export default function AccountPage() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
+    logout();
     navigate('/login');
   };
 

@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
-const HIDDEN_ON = ['/checkout', '/login'];
+const HIDDEN_ON = ['/checkout', '/login', '/forgot-password'];
 
 export default function CartBar() {
   const navigate = useNavigate();
