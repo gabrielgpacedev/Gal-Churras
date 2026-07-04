@@ -221,7 +221,52 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
   align-self: flex-end;
 }
 
+.login-error {
+  margin: 2px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(224, 80, 80, 0.12);
+  border: 1px solid rgba(224, 80, 80, 0.35);
+  color: #e98a7e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .login-btn { margin-top: 0.5rem; font-size: 16px; }
+
+.back-to-login {
+  display: block;
+  width: 100%;
+  margin-top: 1.25rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+.back-to-login:hover { color: var(--accent); }
+
+.forgot-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.forgot-success .login-subtitle { margin-bottom: 1.5rem; }
+.forgot-success .login-btn { width: 100%; }
+
+.forgot-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: rgba(240, 120, 32, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.forgot-email { color: var(--text-primary); }
 
 .login-divider {
   display: flex;
