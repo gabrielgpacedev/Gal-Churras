@@ -2,6 +2,7 @@ package com.galchurras.galchurras_api.entity;
 
 import com.galchurras.galchurras_api.enuns.StatusEntrega;
 import com.galchurras.galchurras_api.enuns.StatusPagamento;
+import com.galchurras.galchurras_api.enuns.StatusPedido;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,6 +40,9 @@ public class Pedido {
     @Enumerated
     @Column(nullable = false)
     private StatusEntrega statusEntrega;
+
+    @Enumerated
+    private StatusPedido statusPedido;
 
     @Enumerated
     @Column(nullable = false)

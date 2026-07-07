@@ -22,6 +22,7 @@ import java.util.Optional;
 public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
+    private final PedidoKitRepository pedidoKitRepository;
     private final PessoaRepository pessoaRepository;
     private final EntityMapper entityMapper;
     private final PedidoProdutoRepository pedidoProdutoRepository;
@@ -30,7 +31,7 @@ public class PedidoService {
 
         PedidoDTO pedidoDTO = new PedidoDTO();
 
-        Optional<Pessoa> pessoa = pessoaRepository.findById(idPessoa);
+        List<PedidoKit> pedidoKits = pedidoKitRepository.findAllByPedido_Id(idPedido);
 
         Pedido pedido = pedidoRepository.findPedidoByStatusPedidoAndUsuario_Id(StatusPedido.PREPARANDO, idPessoa).orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
 
@@ -44,14 +45,13 @@ public class PedidoService {
 
         pedidoDTO.setNomeEstabelecimento(pedido.getEstabelecimento().getNome());
         pedidoDTO.setStatusPedido(pedido.getStatusPedido());
-        pedidoDTO.setHorapedido(pedido.getData_pedido());
+        pedidoDTO.setHorapedido(pedido.getDataPedido());
         pedidoDTO.setTempoEstimadoEstabelecimentoEntrega(10.2);
         pedidoDTO.setEndereco(pedido.getEndereco()
                 .toString());
         pedidoDTO.setProdutos(produtos);
         pedidoDTO.setPedidosKits(
-                pedido.getKits()
-                        .stream()
+                pedidoKits.stream()
                         .map(entityMapper::pedidoKitToDTO)
                         .toList()
         );

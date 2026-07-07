@@ -30,4 +30,12 @@ public class Usuario {
 
     @Column(nullable = false, name = "ativo")
     private Boolean ativo;
+
+    @Column(nullable = false, name = "ativo")
+    private String username;
+
+    @Column(nullable = false, name = "ativo")
+    private String senha;
+
+
 }
