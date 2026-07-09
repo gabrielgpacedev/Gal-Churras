@@ -2614,3 +2614,335 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
 .checkout-kit-stepper-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
 
 .checkout-empty-cta { width: auto; margin-top: 16px; padding: 12px 24px; }
+
+/* ── Login: seleção de perfil (demo) ─────────── */
+.demo-roles {
+  display: flex;
+  gap: 8px;
+}
+.demo-role-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  transition: border-color 0.15s, background 0.15s;
+}
+.demo-role-btn:hover { border-color: var(--accent); background: var(--bg-card-light); }
+.demo-role-emoji { font-size: 22px; line-height: 1; }
+
+/* ── Perfis operacionais (entregador / estabelecimento) ── */
+.role-screen { padding-bottom: 24px; }
+
+.role-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 12px;
+}
+.role-header-user { display: flex; align-items: center; gap: 12px; }
+.role-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.role-avatar.shop { background: linear-gradient(145deg, #c8972b, #9c7420); }
+.role-greeting {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.role-name { font-size: 19px; font-weight: 800; color: var(--text-primary); }
+
+.role-logout {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+}
+.role-logout:hover { background: var(--bg-card-light); color: var(--text-primary); }
+
+.role-toggle-online {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 16px 4px;
+  padding: 12px 14px;
+  width: calc(100% - 32px);
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.15s;
+}
+.role-toggle-online.on {
+  background: rgba(46, 139, 87, 0.14);
+  border-color: #2e8b57;
+  color: #a7e0bd;
+}
+.role-toggle-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+.role-toggle-online.on .role-toggle-dot { background: #35c46f; box-shadow: 0 0 0 4px rgba(53,196,111,0.2); }
+
+.role-stats {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+}
+.role-stat-card {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+  text-align: center;
+}
+.role-stat-value { font-size: 20px; font-weight: 900; color: var(--text-primary); }
+.role-stat-value.gold { color: var(--gold); font-size: 17px; }
+.role-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.role-section { padding: 8px 16px 16px; }
+.role-section .section-title { margin-bottom: 12px; }
+
+.role-list { display: flex; flex-direction: column; gap: 12px; }
+
+.role-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.role-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.role-card-tag {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.role-card-title { font-size: 17px; font-weight: 800; color: var(--text-primary); }
+
+.role-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: rgba(240, 120, 32, 0.12);
+  color: var(--accent);
+}
+.role-badge.status-disponivel,
+.role-badge.status-novo { background: rgba(200,151,43,0.16); color: var(--gold); }
+.role-badge.status-em_rota,
+.role-badge.status-preparando { background: rgba(240,120,32,0.14); color: var(--accent); }
+.role-badge.status-pronto { background: rgba(46,139,87,0.16); color: #6fd39a; }
+
+.role-card-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.role-card-line svg { color: var(--text-muted); flex-shrink: 0; }
+
+.role-card-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.role-chip {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+.role-chip.gold { color: var(--gold); }
+
+.role-order-items {
+  background: var(--bg-input);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.role-order-item { font-size: 13px; color: var(--text-primary); }
+
+.role-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.role-order-total { font-size: 18px; font-weight: 800; color: var(--gold); }
+.role-order-btn {
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 18px;
+  transition: background 0.15s;
+}
+.role-order-btn:hover { background: var(--accent-hover); }
+
+.role-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+}
+.role-empty-sub { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+
+/* ── Alternador Entrar / Criar conta ─────────── */
+.auth-toggle {
+  display: flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.auth-toggle-btn {
+  flex: 1;
+  padding: 11px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+}
+.auth-toggle-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Cadastro: escolha de sistema ────────────── */
+.register-hero { padding: 2rem 1.5rem 1.25rem; }
+
+.register-choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.register-choice-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text-primary);
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.register-choice-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-light);
+}
+.register-choice-emoji {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(240, 120, 32, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.register-choice-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.register-choice-text strong { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+.register-choice-text span { font-size: 12px; color: var(--text-muted); }
+.register-choice-card svg { color: var(--text-muted); flex-shrink: 0; }
+
+/* ── Cadastro: campos ────────────────────────── */
+.reg-row {
+  display: flex;
+  gap: 10px;
+}
+.reg-row .field-group { flex: 1; min-width: 0; }
+
+.reg-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-primary);
+  outline: none;
+  caret-color: var(--accent);
+  transition: border-color 0.15s;
+}
+.reg-input::placeholder { color: var(--text-muted); }
+.reg-input:focus { border-color: var(--accent); }
+select.reg-input { appearance: none; cursor: pointer; }
+select.reg-input option { background: #3d0c0c; color: var(--text-primary); }
+.reg-input[type="date"] { color-scheme: dark; }
