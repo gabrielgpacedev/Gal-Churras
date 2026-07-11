@@ -7,6 +7,12 @@ export default function RegisterLayout({ title, subtitle, children }) {
 
   return (
     <div className="screen login-screen">
+      <button className="back-btn" onClick={() => navigate('/login')} aria-label="Voltar para o login">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+
       <div className="login-hero register-hero">
         <div className="login-logo">
           <div className="logo-box">
@@ -21,15 +27,6 @@ export default function RegisterLayout({ title, subtitle, children }) {
       </div>
 
       <div className="login-form-container">
-        <div className="auth-toggle">
-          <button type="button" className="auth-toggle-btn" onClick={() => navigate('/login')}>
-            Já tenho conta
-          </button>
-          <button type="button" className="auth-toggle-btn active" onClick={() => navigate('/register')}>
-            Criar conta
-          </button>
-        </div>
-
         <h1 className="login-title">{title}</h1>
         {subtitle && <p className="login-subtitle">{subtitle}</p>}
 

@@ -16,6 +16,16 @@ export default function BottomNav() {
       ),
     },
     {
+      path: '/catalogo',
+      label: 'Catálogo',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 4h16v4H4zM4 12h16v8H4z" />
+          <path d="M8 12v8M4 8h16" />
+        </svg>
+      ),
+    },
+    {
       path: '/orders',
       label: 'Pedidos',
       icon: (

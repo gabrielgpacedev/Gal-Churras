@@ -13,6 +13,7 @@ import KitsPage from '../pages/KitsPage';
 import ShopsPage from '../pages/ShopsPage';
 import EditProfilePage from '../pages/EditProfilePage';
 import FavoritesPage from '../pages/FavoritesPage';
+import CatalogoPage from '../pages/CatalogoPage';
 
 // Perfis operacionais
 import EntregadorHomePage from '../pages/EntregadorHomePage';
@@ -54,6 +55,7 @@ export default function RoleRoutes() {
       <Route path="/shops" element={<ShopsPage />} />
       <Route path="/account/edit" element={<EditProfilePage />} />
       <Route path="/favorites" element={<FavoritesPage />} />
+      <Route path="/catalogo" element={<CatalogoPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

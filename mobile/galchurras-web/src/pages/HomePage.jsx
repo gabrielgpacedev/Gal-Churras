@@ -1,35 +1,89 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { categories, kits, butcherShops, kitShopOffers, shopKits, WEEKLY_PROMO } from '../data/mockData';
-import { useCart } from '../context/CartContext';
+import { currentUser } from '../data/mockData';
+import { listarCategoriasKit, listarKits, listarEstabelecimentos } from '../services/catalog';
 
 const KIT_COLORS = ['#7c2020', '#6b1a1a', '#5c1515', '#4a1010'];
 
-const kitImageStyle = (image) =>
-  image ? { backgroundImage: `linear-gradient(180deg, rgba(26,5,5,0.1) 30%, rgba(26,5,5,0.9) 100%), url(${image})` } : undefined;
+const money = (v) => {
+  if (v == null || v === '') return null;
+  const n = typeof v === 'number' ? v : Number(String(v).replace(/[^0-9.,]/g, '').replace(',', '.'));
+  if (Number.isNaN(n)) return null;
+  return `R$ ${n.toFixed(2).replace('.', ',')}`;
+};
 
-const { shopId: PROMO_SHOP_ID, kitId: PROMO_KIT_ID } = WEEKLY_PROMO;
-const promoShop = butcherShops.find(s => s.id === PROMO_SHOP_ID);
-const promoShopKit = shopKits[PROMO_SHOP_ID]?.find(sk => sk.kitId === PROMO_KIT_ID);
+// A API não fornece imagens; onde houver uma, é usada como fundo,
+// caso contrário mostramos o aviso pedido no lugar da imagem.
+function MediaFallback({ small }) {
+  return (
+    <div className={`media-fallback${small ? ' media-fallback-sm' : ''}`}>
+      Não foi possível encontrar a imagem
+    </div>
+  );
+}
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { addKit } = useCart();
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
 
-  const filteredKits = kits.filter((k) => {
-    const matchCat = activeCategory === 'all' || k.category === activeCategory;
-    const matchSearch = k.name.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+  const [categorias, setCategorias] = useState([]);
+  const [shops, setShops] = useState([]);
+  const [kits, setKits] = useState([]);
 
-  const minPrice = (kitId) => {
-    const offers = kitShopOffers[kitId] || [];
-    if (!offers.length) return null;
-    return Math.min(...offers.map((o) => o.price));
-  };
+  const [loading, setLoading] = useState(true);   // shell inicial (categorias + açougues)
+  const [loadingKits, setLoadingKits] = useState(true);
+  const [error, setError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const avatar = (currentUser?.name || 'G').charAt(0).toUpperCase();
+  const city = currentUser?.location?.city || 'Vila Madalena';
+  const state = currentUser?.location?.state || 'SP';
+
+  // Categorias + açougues (uma vez por reload)
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError('');
+    Promise.all([listarCategoriasKit(), listarEstabelecimentos()])
+      .then(([cats, s]) => {
+        if (!active) return;
+        setCategorias(cats);
+        setShops(s);
+      })
+      .catch((e) => active && setError(e.message || 'Erro ao carregar a página.'))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [reloadKey]);
+
+  // Kits — recarrega ao trocar de categoria (filtro feito na API)
+  useEffect(() => {
+    let active = true;
+    setLoadingKits(true);
+    const categoriaId = activeCategory === 'all' ? undefined : activeCategory;
+    listarKits(categoriaId)
+      .then((k) => active && setKits(k))
+      .catch(() => active && setKits([]))
+      .finally(() => active && setLoadingKits(false));
+    return () => {
+      active = false;
+    };
+  }, [activeCategory, reloadKey]);
+
+  const filteredKits = kits.filter((k) =>
+    (k.nome || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Destaque da semana: primeiro kit disponível
+  const promoKit = kits[0];
+
+  const goToKit = (kit) =>
+    navigate(`/kit/${kit.id}`, { state: { nome: kit.nome, categoria: kit.categoria } });
+
+  const pills = [{ id: 'all', label: 'Todos' }, ...categorias.map((c) => ({ id: c.id, label: c.descricao }))];
 
   return (
     <div className="screen">
@@ -41,49 +95,33 @@ export default function HomePage() {
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
               <circle cx="12" cy="10" r="3" />
             </svg>
-            <strong>Vila Madalena</strong> · SP
+            <strong>{city}</strong> · {state}
           </div>
         </div>
-        <div className="home-avatar">R</div>
+        <div className="home-avatar">{avatar}</div>
       </div>
 
-      <div
-        className="home-banner"
-        style={WEEKLY_PROMO.image ? { backgroundImage: `linear-gradient(180deg, rgba(46,8,8,0.45) 0%, rgba(26,5,5,0.88) 100%), url(${WEEKLY_PROMO.image})` } : undefined}
-        onClick={() => { if (promoShopKit && addKit(promoShopKit, { promo: true })) navigate('/checkout'); }}
-      >
-        <span className="banner-tag">✦ Promoção da semana</span>
+      {promoKit && (
+        <div className="home-banner" onClick={() => goToKit(promoKit)}>
+          <MediaFallback />
+          <span className="banner-tag">✦ Promoção da semana</span>
 
+          <h2 className="banner-title">{promoKit.nome}</h2>
 
-
-        <h2 className="banner-title">{promoShopKit.name}</h2>
-        <p className="banner-kit-badge">{promoShopKit.badge}</p>
-
-        <div className="banner-shop-row">
-          <span className="banner-shop-name">{promoShop.name}</span>
-          <span className="banner-shop-rating">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--accent)" stroke="none">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            {promoShop.rating}
-          </span>
-        </div>
-
-
-
-        <div className="banner-footer">
-          <div className="banner-price-block">
-            <span className="banner-price-label">a partir de</span>
-            <span className="banner-price">R$ {promoShopKit.price.toFixed(2).replace('.', ',')}</span>
+          <div className="banner-footer">
+            <div className="banner-price-block">
+              <span className="banner-price-label">a partir de</span>
+              {money(promoKit.valor) && <span className="banner-price">{money(promoKit.valor)}</span>}
+            </div>
+            <span className="banner-cta">
+              Ver oferta
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
           </div>
-          <span className="banner-cta">
-            Ver oferta
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </span>
         </div>
-      </div>
+      )}
 
       <div className="home-content">
         <div className="search-bar">
@@ -100,7 +138,7 @@ export default function HomePage() {
         </div>
 
         <div className="category-pills">
-          {categories.map((cat) => (
+          {pills.map((cat) => (
             <button
               key={cat.id}
               className={`category-pill${activeCategory === cat.id ? ' active' : ''}`}
@@ -119,36 +157,41 @@ export default function HomePage() {
           <button className="see-all" onClick={() => navigate('/kits')}>Ver tudo</button>
         </div>
 
-        <div className="kits-list">
-          {filteredKits.map((kit, i) => (
-            <div
-              key={kit.id}
-              className="kit-card-home"
-              style={{ background: KIT_COLORS[i % KIT_COLORS.length] }}
-              onClick={() => navigate(`/kit/${kit.id}`)}
-            >
-              <div className="kit-card-image-placeholder" style={kitImageStyle(kit.image)} />
-              <div className="kit-card-badge-serves">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 00-3-3.87" />
-                  <path d="M16 3.13a4 4 0 010 7.75" />
-                </svg>
-                {kit.serves}
+        {error && !loading ? (
+          <div className="catalog-state catalog-error">
+            <p>{error}</p>
+            <button className="btn-primary catalog-retry" onClick={() => setReloadKey((k) => k + 1)}>
+              Tentar novamente
+            </button>
+          </div>
+        ) : loadingKits ? (
+          <div className="catalog-state">Carregando kits…</div>
+        ) : filteredKits.length === 0 ? (
+          <p className="catalog-empty">Nenhum kit encontrado.</p>
+        ) : (
+          <div className="kits-list">
+            {filteredKits.map((kit, i) => (
+              <div
+                key={kit.id}
+                className="kit-card-home"
+                style={{ background: KIT_COLORS[i % KIT_COLORS.length] }}
+                onClick={() => goToKit(kit)}
+              >
+                <div className="kit-card-image-placeholder">
+                  <MediaFallback />
+                </div>
+                <div className="kit-card-info">
+                  <span className="kit-card-name">{kit.nome}</span>
+                  {money(kit.valor) && (
+                    <span className="kit-card-price">
+                      A partir de <strong>{money(kit.valor)}</strong>
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="kit-card-info">
-                <span className="kit-card-tag">{kit.badge}</span>
-                <span className="kit-card-name">{kit.name}</span>
-                {minPrice(kit.id) && (
-                  <span className="kit-card-price">
-                    A partir de <strong>R$ {minPrice(kit.id).toFixed(2).replace('.', ',')}</strong>
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="section-header" style={{ marginTop: '1.5rem' }}>
           <div>
@@ -158,29 +201,33 @@ export default function HomePage() {
           <button className="see-all" onClick={() => navigate('/shops')}>Ver tudo</button>
         </div>
 
-        <div className="shops-list">
-          {butcherShops.map((shop) => (
-            <div
-              key={shop.id}
-              className="shop-card-home"
-              onClick={() => navigate(`/butcher/${shop.id}`)}
-            >
-              <div className="shop-card-image" style={shop.image ? { backgroundImage: `url(${shop.image})` } : undefined} />
-              <div className="shop-card-info">
-                <div className="shop-card-top">
-                  <span className="shop-card-name">{shop.name}</span>
-                  <span className="shop-card-rating">⭐ {shop.rating}</span>
+        {loading ? (
+          <div className="catalog-state">Carregando açougues…</div>
+        ) : shops.length === 0 ? (
+          <p className="catalog-empty">Nenhum estabelecimento cadastrado.</p>
+        ) : (
+          <div className="shops-list">
+            {shops.map((shop) => (
+              <div
+                key={shop.id}
+                className="shop-card-home"
+                onClick={() => navigate(`/butcher/${shop.id}`)}
+              >
+                <div className="shop-card-image">
+                  <MediaFallback small />
                 </div>
-                <span className="shop-card-address">{shop.address}</span>
-                <div className="shop-card-meta">
-                  <span>🕐 {shop.deliveryTime}</span>
-                  <span>📍 {shop.distance}</span>
+                <div className="shop-card-info">
+                  <div className="shop-card-top">
+                    <span className="shop-card-name">{shop.nome}</span>
+                  </div>
+                  {shop.cnpj && <span className="shop-card-address">CNPJ: {shop.cnpj}</span>}
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
+
       <BottomNav />
     </div>
   );

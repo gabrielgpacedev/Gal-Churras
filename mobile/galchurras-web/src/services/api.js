@@ -4,18 +4,18 @@
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 /**
- * Autentica o usuário no backend.
- * @param {string} login
+ * Autentica o usuário no backend por e-mail ou CPF + senha.
+ * @param {string} identificador  e-mail ou CPF
  * @param {string} senha
  * @returns {Promise<{token:string,id:number,nome:string,email:string,tipoUsuario:string}>}
  */
-export async function loginRequest(login, senha) {
+export async function loginRequest(identificador, senha) {
   let res;
   try {
     res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ login, senha }),
+      body: JSON.stringify({ identificador, senha }),
     });
   } catch {
     // Falha de rede / backend fora do ar

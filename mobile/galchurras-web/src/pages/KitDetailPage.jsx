@@ -1,99 +1,148 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { kits, kitShopOffers, butcherShops, shopKits } from '../data/mockData';
-import { useCart } from '../context/CartContext';
+import { listarKits, listarProdutosDoKit, listarEstabelecimentos } from '../services/catalog';
+
+const money = (v) => {
+  if (v == null || v === '') return '';
+  const n = typeof v === 'number' ? v : Number(String(v).replace(/[^0-9.,]/g, '').replace(',', '.'));
+  if (Number.isNaN(n)) return String(v);
+  return `R$ ${n.toFixed(2).replace('.', ',')}`;
+};
+
+// A API não fornece imagem do kit; mostramos o aviso no lugar dela.
+function MediaFallback() {
+  return <div className="media-fallback">Não foi possível encontrar a imagem</div>;
+}
 
 export default function KitDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addKit } = useCart();
-  const kit = kits.find((k) => k.id === Number(id));
-  const offers = kitShopOffers[Number(id)] || [];
+  const location = useLocation();
 
-  const orderFrom = (shopId) => {
-    const shopKit = (shopKits[shopId] || []).find((sk) => sk.kitId === Number(id));
-    if (shopKit && addKit(shopKit)) navigate('/checkout');
-  };
+  const [kit, setKit] = useState(null);            // { nome, valor, categoria }
+  const [produtos, setProdutos] = useState([]);    // itens que compõem o kit (INCLUI)
+  const [shops, setShops] = useState([]);          // açougues que oferecem o kit
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  if (!kit) return <div className="screen"><p style={{ color: '#f5e6c8', padding: '2rem' }}>Kit não encontrado.</p></div>;
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError('');
+
+    Promise.all([listarKits(), listarProdutosDoKit(id), listarEstabelecimentos()])
+      .then(([todos, prods, estabs]) => {
+        if (!active) return;
+        const atual = todos.find((k) => String(k.id) === String(id));
+        setKit(
+          atual || {
+            nome: location.state?.nome || 'Kit',
+            valor: null,
+            categoria: location.state?.categoria || '',
+          }
+        );
+        setProdutos(prods);
+        setShops(estabs);
+      })
+      .catch((e) => active && setError(e.message || 'Erro ao carregar o kit.'))
+      .finally(() => active && setLoading(false));
+
+    return () => {
+      active = false;
+    };
+  }, [id, location.state?.nome, location.state?.categoria]);
+
+  const nome = kit?.nome || location.state?.nome || 'Kit';
+  const categoria = kit?.categoria || location.state?.categoria || '';
+  const valor = kit?.valor;
+  const totalOpcoes = shops.length;
 
   return (
     <div className="screen">
       <div className="detail-hero">
-        <button className="back-btn" onClick={() => navigate(-1)}>
+        <div className="detail-hero-image" />
+        <MediaFallback />
+        <button className="back-btn" onClick={() => navigate(-1)} aria-label="Voltar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
+            <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <div className="detail-hero-image" style={kit.image ? { backgroundImage: `url(${kit.image})` } : undefined} />
         <div className="detail-hero-overlay">
-          <span className="detail-hero-tag">{kit.badge}</span>
-          <h1 className="detail-hero-title">{kit.name}</h1>
-          <div className="detail-hero-serves">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 00-3-3.87" />
-              <path d="M16 3.13a4 4 0 010 7.75" />
-            </svg>
-            {kit.serves}
-          </div>
+          {categoria && <span className="detail-hero-tag">{categoria}</span>}
+          <h1 className="detail-hero-title">{nome}</h1>
         </div>
       </div>
 
       <div className="detail-content">
-        <p className="detail-description">{kit.description}</p>
+        {loading && <div className="catalog-state">Carregando…</div>}
 
-        <div className="section-header">
-          <h3 className="section-title">Açougues com esse kit</h3>
-          <span className="offers-count">{offers.length} opções</span>
-        </div>
+        {error && !loading && (
+          <div className="catalog-state catalog-error">
+            <p>{error}</p>
+          </div>
+        )}
 
-        <div className="offers-list">
-          {offers.map((offer) => {
-            const shop = butcherShops.find((s) => s.id === offer.shopId);
-            if (!shop) return null;
-            return (
-              <div
-                key={offer.shopId}
-                className="offer-card"
-                onClick={() => orderFrom(shop.id)}
-              >
-                <div className="offer-card-header">
-                  <div>
-                    <span className="offer-shop-name">{shop.name}</span>
-                    <div className="offer-shop-address">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                      </svg>
-                      {shop.address}
+        {!loading && !error && (
+          <>
+            <div className="section-header">
+              <h2 className="section-title">Açougues com esse kit</h2>
+              <span className="offers-count">
+                {totalOpcoes} {totalOpcoes === 1 ? 'opção' : 'opções'}
+              </span>
+            </div>
+
+            {shops.length === 0 ? (
+              <p className="catalog-empty">Nenhum açougue oferece esse kit no momento.</p>
+            ) : (
+              <div className="offers-list">
+                {shops.map((shop) => (
+                  <div
+                    key={shop.id}
+                    className="offer-card"
+                    onClick={() => navigate(`/butcher/${shop.id}`)}
+                  >
+                    <div className="offer-card-header">
+                      <div>
+                        <span className="offer-shop-name">{shop.nome}</span>
+                        {shop.cnpj && (
+                          <span className="offer-shop-address">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                              <circle cx="12" cy="10" r="3" />
+                            </svg>
+                            CNPJ: {shop.cnpj}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="offer-items">
+                      <span className="offer-items-label">INCLUI</span>
+                      {produtos.length === 0 ? (
+                        <div className="offer-item-row">
+                          <span>Itens não cadastrados</span>
+                        </div>
+                      ) : (
+                        produtos.map((p, i) => (
+                          <div key={i} className="offer-item-row">
+                            <span>{p.nome}</span>
+                            {p.quantidade != null && <span>{p.quantidade}x</span>}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="offer-footer">
+                      <div className="offer-meta" />
+                      {money(valor) && <span className="offer-price">{money(valor)}</span>}
                     </div>
                   </div>
-                  <span className="offer-shop-rating">⭐ {shop.rating}</span>
-                </div>
-
-                <div className="offer-items">
-                  <span className="offer-items-label">INCLUI</span>
-                  {offer.items.map((item) => (
-                    <div key={item.name} className="offer-item-row">
-                      <span>{item.name}</span>
-                      <span>{item.qty}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="offer-footer">
-                  <div className="offer-meta">
-                    <span>🕐 {offer.deliveryTime}</span>
-                    <span>📍 {offer.distance}</span>
-                  </div>
-                  <span className="offer-price">R$ {offer.price.toFixed(2).replace('.', ',')}</span>
-                </div>
+                ))}
               </div>
-            );
-          })}
-        </div>
+            )}
+          </>
+        )}
       </div>
 
       <BottomNav />
